@@ -1,0 +1,15 @@
+{
+  "name": "file_viewer",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "@kooboo/vitest-plugin": "^0.0.3",
+    "@types/node": "^25.3.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.18"
+  },
+  "scripts": {
+    "dev": "kb sync",
+    "test": "vitest"
+  }
+}
