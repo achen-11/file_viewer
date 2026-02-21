@@ -1,5 +1,6 @@
- var http = axios.create({
-    // 请求超时时间
+// API 根路径：同源留空；或设 window.__KFILE_API_BASE__ 再加载此脚本
+var baseUrl = typeof baseUrl !== 'undefined' ? baseUrl : { value: (typeof window !== 'undefined' && window.__KFILE_API_BASE__ !== undefined) ? window.__KFILE_API_BASE__ : '' };
+var http = axios.create({
     timeout: 300000,
     baseURL: baseUrl.value,
 })
@@ -11,14 +12,11 @@ http.interceptors.request.use(config => {
 
 // 添加响应拦截器
 http.interceptors.response.use(response => {
-    // 错误处理
     if (response.headers['content-type'] === 'application/pdf') {
-        return response.data.data
+        return response.data?.data != null ? response.data.data : response.data
     }
-    // if (response.data?.code !== 200) {
-    //     return Promise.reject(response.data.data)
-    // }
-    return response.data.data
+    // 兼容直接返回 body 或 { data } 包装
+    return response.data?.data !== undefined ? response.data.data : response.data
 }, error => {
     const rspData = error.response?.data
     const msg = typeof rspData === 'string' ? rspData : rspData?.msg

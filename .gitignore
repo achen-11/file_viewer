@@ -142,3 +142,4 @@ vite.config.ts.timestamp-*
 kooboo.setup.ts
 
 .DS_Store
+e2e

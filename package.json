@@ -4,12 +4,14 @@
   "type": "module",
   "devDependencies": {
     "@kooboo/vitest-plugin": "^0.0.3",
+    "@playwright/test": "^1.58.2",
     "@types/node": "^25.3.0",
     "typescript": "^5.8.3",
     "vitest": "^4.0.18"
   },
   "scripts": {
     "dev": "kb sync",
-    "test": "vitest"
+    "test": "vitest",
+    "test:e2e": "playwright test"
   }
 }
