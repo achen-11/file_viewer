@@ -7,7 +7,7 @@
       <p>选择文件可预览或编辑</p>
     </div>
     <template v-else="">
-      <div class="flex-shrink-0 px-3 py-2 border-b border-slate-200 flex items-center justify-between gap-2 bg-white">
+      <div class="flex-shrink-0 px-3 py-1.5 border-b border-slate-200 flex items-center justify-between gap-2 bg-white">
         <span class="text-sm font-medium text-slate-700 truncate min-w-0" :title="editFileName || (selectedFile && (selectedFile.Name || selectedFile.FullName))">{{ editFileName || (selectedFile && (selectedFile.Name || selectedFile.FullName)) }}</span>
         <div class="flex items-center gap-1 flex-shrink-0">
           <template v-if="editFileName">

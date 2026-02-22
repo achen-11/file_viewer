@@ -33,6 +33,7 @@
     var uploadCurrentName = ref('');
     var previewWidth = ref(890);
     var isResizing = ref(false);
+    var treeCollapsed = ref(false);
     var listViewMode = ref('list');
     var sortBy = ref('name');
     var sortOrder = ref('asc');
@@ -40,6 +41,13 @@
     var breadcrumbParts = computed(function () {
       var p = currentFolder.value;
       return p ? p.split('/').filter(Boolean) : [];
+    });
+    var breadcrumbPartsDisplay = computed(function () {
+      var parts = breadcrumbParts.value;
+      if (parts.length <= 3) return parts.map(function (p) { return { name: p, path: parts.slice(0, parts.indexOf(p) + 1).join('/') }; });
+      var first = { name: parts[0], path: parts[0] };
+      var lastTwo = parts.slice(-2).map(function (p) { return { name: p, path: parts.slice(0, parts.indexOf(p) + 1).join('/') }; });
+      return [first, { name: '...', path: null }].concat(lastTwo);
     });
     var subFoldersInList = computed(function () {
       var list = foldersMap.value[currentFolder.value];
@@ -351,6 +359,7 @@
     function setPreviewWidth(w) { previewWidth.value = Math.max(200, Math.min(window.innerWidth - 200, w)); }
     function startResize() { isResizing.value = true; }
     function endResize() { isResizing.value = false; }
+    function toggleTree() { treeCollapsed.value = !treeCollapsed.value; }
 
     watch(currentFolder, function () { loadCurrentList(); }, { immediate: false });
     loadTopFolders();
@@ -361,7 +370,8 @@
       editFileName, editContent, treeLoading, listLoading, error, listError, modalNewFolder, newFolderName,
       modalNewFile, newFileName, modalRename, modalDelete, uploading, uploadProgress, uploadCurrentIndex, uploadTotal, uploadCurrentName,
       previewWidth, isResizing, setPreviewWidth, startResize, endResize,
-      breadcrumbParts, subFoldersInList, filesInList, sortedSubFoldersInList, sortedFilesInList,
+      treeCollapsed, toggleTree,
+      breadcrumbParts, breadcrumbPartsDisplay, subFoldersInList, filesInList, sortedSubFoldersInList, sortedFilesInList,
       listViewMode, sortBy, sortOrder, setSortBy, getFileIconClass,
       refresh, navigateTo, selectFile, isImage, isMarkdown, previewHtml, copyLink, startEdit, cancelEdit, saveEdit,
       confirmDelete, submitDelete, openNewFolderModal, submitNewFolder, openNewFileModal, submitNewFile,
