@@ -9,16 +9,16 @@
       <p class="text-slate-400 text-sm pt-1">加载中…</p>
     </div>
     <div v-else-if="listError" class="px-2 py-4 text-red-600 text-sm" role="alert">{{ listError }}</div>
-    <ul v-else class="space-y-0.5" role="tree" aria-label="文件夹列表">
+    <ul v-else="" class="space-y-0.5" role="tree" aria-label="文件夹列表">
       <li role="none">
         <button type="button" @click="navigateTo('')" @keydown.down.prevent="focusNext($event)" @keydown.up.prevent="focusPrev($event)" :class="currentFolder === '' ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-slate-50'" class="w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2 cursor-pointer transition-colors" :aria-current="currentFolder === '' ? 'true' : null" role="treeitem" :tabindex="treeFocusedIndex === 0 ? 0 : -1" :data-tree-index="0" @focus="setTreeFocus(0)">
-          <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+          <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
           <span class="truncate">根目录</span>
         </button>
       </li>
       <li v-for="(f, idx) in topFolders" :key="f.FullName || f.Name" role="none">
         <button type="button" @click="navigateTo(f.FullName)" @keydown.down.prevent="focusNext($event)" @keydown.up.prevent="focusPrev($event)" @keydown.enter.prevent="navigateTo(f.FullName)" :class="currentFolder === f.FullName ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-slate-50'" class="w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2 cursor-pointer transition-colors" :aria-current="currentFolder === f.FullName ? 'true' : null" role="treeitem" :tabindex="treeFocusedIndex === idx + 1 ? 0 : -1" :data-tree-index="idx + 1" @focus="setTreeFocus(idx + 1)">
-          <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+          <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
           <span class="truncate">{{ f.Name }}</span>
         </button>
       </li>

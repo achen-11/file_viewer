@@ -1,5 +1,3 @@
-// API 根路径：同源留空；或设 window.__KFILE_API_BASE__ 再加载此脚本
-var baseUrl = typeof baseUrl !== 'undefined' ? baseUrl : { value: (typeof window !== 'undefined' && window.__KFILE_API_BASE__ !== undefined) ? window.__KFILE_API_BASE__ : '' };
 var http = axios.create({
     timeout: 300000,
     baseURL: baseUrl.value,
