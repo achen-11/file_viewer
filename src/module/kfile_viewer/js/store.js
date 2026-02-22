@@ -31,7 +31,7 @@
     var uploadCurrentIndex = ref(0);
     var uploadTotal = ref(0);
     var uploadCurrentName = ref('');
-    var previewWidth = ref(384);
+    var previewWidth = ref(890);
     var isResizing = ref(false);
     var listViewMode = ref('list');
     var sortBy = ref('name');
@@ -248,7 +248,7 @@
     function cancelEdit() {
       editFileName.value = '';
       editContent.value = '';
-      setPreviewWidth(384);
+      setPreviewWidth(890);
     }
     function saveEdit() {
       var name = editFileName.value;
