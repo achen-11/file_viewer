@@ -14,10 +14,6 @@
         </label>
       </nav>
     </div>
-    <div v-if="error" class="px-4 py-2 bg-red-50 border-t border-red-100 flex items-center justify-between gap-2 text-red-700 text-sm">
-      <span class="min-w-0 truncate">{{ error }}</span>
-      <button type="button" @click="clearError" class="p-1 rounded hover:bg-red-100 shrink-0 cursor-pointer" aria-label="关闭">✕</button>
-    </div>
   </header>
 </template>
 <script>

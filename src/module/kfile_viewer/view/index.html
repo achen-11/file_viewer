@@ -11,7 +11,7 @@
   <script src="/js/vue-router.js"></script>
   <script src="/js/axios.min.js"></script>
   <script env="server">
-    const baseUrl = k.module.baseUrl + '/api/files'
+    const baseUrl = (k.module.baseUrl.startsWith('http:') ? 'https:' + k.module.baseUrl.slice(5) : k.module.baseUrl) + '/api/files'
     k.utils.clientJS.setVariable("baseUrl", { value: baseUrl})
   </script>
   <script>

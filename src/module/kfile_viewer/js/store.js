@@ -31,7 +31,9 @@
     var uploadCurrentIndex = ref(0);
     var uploadTotal = ref(0);
     var uploadCurrentName = ref('');
-    var listViewMode = ref('grid');
+    var previewWidth = ref(384);
+    var isResizing = ref(false);
+    var listViewMode = ref('list');
     var sortBy = ref('name');
     var sortOrder = ref('asc');
 
@@ -74,17 +76,45 @@
       if (msg) setTimeout(function () { error.value = ''; }, 4000);
     }
     function clearError() { error.value = ''; }
+    function showToast(message, type, duration) {
+      if (type === void 0) { type = 'success'; }
+      if (duration === void 0) { duration = 3000; }
+      var toast = document.getElementById('kfile-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'kfile-toast';
+        toast.className = 'fixed top-4 right-4 z-[9999] flex flex-col gap-2';
+        document.body.appendChild(toast);
+      }
+      var el = document.createElement('div');
+      var icon = '';
+      var bg = '';
+      if (type === 'success') { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'; bg = 'bg-emerald-50 border-emerald-200 text-emerald-700'; }
+      else if (type === 'error') { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>'; bg = 'bg-red-50 border-red-200 text-red-700'; }
+      else if (type === 'warning') { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>'; bg = 'bg-amber-50 border-amber-200 text-amber-700'; }
+      else { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'; bg = 'bg-slate-50 border-slate-200 text-slate-700'; }
+      el.className = 'flex items-center gap-2 px-4 py-3 rounded-lg border shadow-lg transform transition-all duration-300 translate-x-full opacity-0 ' + bg;
+      el.innerHTML = '<span class="flex-shrink-0">' + icon + '</span><span class="text-sm font-medium">' + message + '</span>';
+      toast.appendChild(el);
+      requestAnimationFrame(function () {
+        el.classList.remove('translate-x-full', 'opacity-0');
+      });
+      setTimeout(function () {
+        el.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(function () { el.remove(); }, 300);
+      }, duration);
+    }
     function apiGet(action, params) {
       return http.get(action, { params: params }).catch(function (e) {
         var msg = (e.response && e.response.data && e.response.data.message) || e.message || '请求失败';
-        setError(msg);
+        showToast(msg, 'error');
         throw e;
       });
     }
     function apiPost(action, body) {
       return http.post(action, body).catch(function (e) {
         var msg = (e.response && e.response.data && e.response.data.message) || e.message || '请求失败';
-        setError(msg);
+        showToast(msg, 'error');
         throw e;
       });
     }
@@ -204,12 +234,13 @@
     });
     function copyLink() {
       if (!fileUrl.value) return;
-      navigator.clipboard.writeText(fileUrl.value).then(function () { setError('已复制链接'); });
+      navigator.clipboard.writeText(fileUrl.value).then(function () { showToast('已复制链接', 'success'); });
     }
     function startEdit(file) {
       var name = file.FullName || file.Name;
       editFileName.value = name;
       editContent.value = previewContent.value;
+      if (previewWidth.value < 500) setPreviewWidth(Math.min(window.innerWidth * 0.5, 800));
       apiGet('read', { fileName: name }).then(function (text) {
         editContent.value = text != null ? String(text) : '';
       }).catch(function () {});
@@ -217,12 +248,13 @@
     function cancelEdit() {
       editFileName.value = '';
       editContent.value = '';
+      setPreviewWidth(384);
     }
     function saveEdit() {
       var name = editFileName.value;
       if (!name) return;
       apiPost('write', { fileName: name, content: editContent.value })
-        .then(function () { cancelEdit(); refresh(); setError('已保存'); });
+        .then(function () { cancelEdit(); refresh(); showToast('已保存', 'success'); });
     }
     function confirmDelete(target, isFolder) {
       modalDelete.value = { show: true, target: target, isFolder: isFolder };
@@ -237,7 +269,7 @@
           editFileName.value = '';
         }
         refresh();
-        setError('已删除');
+        showToast('已删除', 'success');
       });
     }
     function openNewFolderModal() {
@@ -250,24 +282,24 @@
     }
     function submitNewFile() {
       var name = newFileName.value.trim();
-      if (!validateName(name)) { setError('文件名为空或不能包含 /'); return; }
+      if (!validateName(name)) { showToast('文件名为空或不能包含 /', 'error'); return; }
       var fullName = currentFolder.value ? currentFolder.value + '/' + name : name;
       apiPost('write', { fileName: fullName, content: '' })
-        .then(function () { modalNewFile.value = false; newFileName.value = ''; loadCurrentList(); setError('已创建'); });
+        .then(function () { modalNewFile.value = false; newFileName.value = ''; loadCurrentList(); showToast('已创建', 'success'); });
     }
     function submitNewFolder() {
       var name = newFolderName.value.trim();
-      if (!validateName(name)) { setError('文件夹名为空或不能包含 /'); return; }
+      if (!validateName(name)) { showToast('文件夹名为空或不能包含 /', 'error'); return; }
       var parent = currentFolder.value;
       apiGet('createFolder', parent ? { folderName: name, parentFolder: parent } : { folderName: name })
-        .then(function () { modalNewFolder.value = false; newFolderName.value = ''; loadTopFolders(); loadCurrentList(); setError('已创建'); });
+        .then(function () { modalNewFolder.value = false; newFolderName.value = ''; loadTopFolders(); loadCurrentList(); showToast('已创建', 'success'); });
     }
     function openRenameModal(fullName, isFolder) {
       modalRename.value = { show: true, oldName: fullName, newName: fullName.split('/').pop(), isFolder: isFolder };
     }
     function submitRename() {
       var o = modalRename.value;
-      if (!validateName(o.newName.trim())) { setError('名称为空或不能包含 /'); return; }
+      if (!validateName(o.newName.trim())) { showToast('名称为空或不能包含 /', 'error'); return; }
       apiGet(o.isFolder ? 'renameFolder' : 'rename', { oldName: o.oldName, newName: o.newName.trim() }).then(function () {
         modalRename.value.show = false;
         if (selectedFile.value && (selectedFile.value.FullName || selectedFile.value.Name) === o.oldName) {
@@ -276,7 +308,7 @@
           editFileName.value = '';
         }
         refresh();
-        setError('已重命名');
+        showToast('已重命名', 'success');
       });
     }
     function onFileSelect(ev) {
@@ -295,7 +327,7 @@
           uploadCurrentName.value = '';
           input.value = '';
           refresh();
-          setError('上传完成');
+          showToast('上传完成', 'success');
           return;
         }
         var file = list[i], fileName = prefix + file.name;
@@ -316,6 +348,9 @@
     function closeRenameModal() { modalRename.value.show = false; }
     function closeDeleteModal() { modalDelete.value.show = false; }
     function validateName(name) { return name && name.indexOf('/') === -1 && !/^\s*$/.test(name); }
+    function setPreviewWidth(w) { previewWidth.value = Math.max(200, Math.min(window.innerWidth - 200, w)); }
+    function startResize() { isResizing.value = true; }
+    function endResize() { isResizing.value = false; }
 
     watch(currentFolder, function () { loadCurrentList(); }, { immediate: false });
     loadTopFolders();
@@ -325,11 +360,12 @@
       currentFolder, topFolders, foldersMap, files, selectedFile, previewContent, previewError, fileUrl,
       editFileName, editContent, treeLoading, listLoading, error, listError, modalNewFolder, newFolderName,
       modalNewFile, newFileName, modalRename, modalDelete, uploading, uploadProgress, uploadCurrentIndex, uploadTotal, uploadCurrentName,
+      previewWidth, isResizing, setPreviewWidth, startResize, endResize,
       breadcrumbParts, subFoldersInList, filesInList, sortedSubFoldersInList, sortedFilesInList,
       listViewMode, sortBy, sortOrder, setSortBy, getFileIconClass,
       refresh, navigateTo, selectFile, isImage, isMarkdown, previewHtml, copyLink, startEdit, cancelEdit, saveEdit,
       confirmDelete, submitDelete, openNewFolderModal, submitNewFolder, openNewFileModal, submitNewFile,
-      openRenameModal, submitRename, onFileSelect, clearError,
+      openRenameModal, submitRename, onFileSelect, clearError, showToast,
       closeNewFolderModal, closeNewFileModal, closeRenameModal, closeDeleteModal
     };
   }

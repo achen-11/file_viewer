@@ -4,8 +4,15 @@
     <div class="flex flex-1 min-h-0">
       <kfile-viewer-file-tree></kfile-viewer-file-tree>
       <main class="flex-1 flex flex-col min-w-0">
-        <div class="flex-1 flex min-h-0">
-          <kfile-viewer-file-list></kfile-viewer-file-list>
+        <div class="flex-1 flex min-h-0" ref="containerRef">
+          <kfile-viewer-file-list class="flex-1 min-w-0"></kfile-viewer-file-list>
+          <!-- 拖拽分隔条 -->
+          <div
+            class="w-1 cursor-col-resize bg-transparent hover:bg-indigo-300 transition-colors flex-shrink-0"
+            @mousedown="handleResizeStart"
+            @dblclick="togglePreviewWidth"
+            title="拖拽调整宽度，双击切换"
+          ></div>
           <kfile-viewer-preview-panel></kfile-viewer-preview-panel>
         </div>
       </main>
@@ -19,7 +26,45 @@
     setup() {
       var store = window.KFileViewerCreateStore && window.KFileViewerCreateStore();
       if (store) provide('store', store);
-      return {};
+
+      var Vue = window.Vue;
+      var containerRef = Vue && Vue.ref ? Vue.ref(null) : { value: null };
+
+      function handleResizeStart(e) {
+        if (!store) return;
+        store.startResize();
+        var startX = e.clientX;
+        var startWidth = store.previewWidth.value;
+
+        function onMouseMove(e) {
+          var dx = startX - e.clientX;
+          store.setPreviewWidth(startWidth + dx);
+        }
+
+        function onMouseUp() {
+          if (store) store.endResize();
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      }
+
+      function togglePreviewWidth() {
+        if (!store) return;
+        if (store.previewWidth.value > 500) {
+          store.setPreviewWidth(384);
+        } else {
+          store.setPreviewWidth(Math.min(window.innerWidth * 0.5, 800));
+        }
+      }
+
+      return {
+        containerRef: containerRef,
+        handleResizeStart: handleResizeStart,
+        togglePreviewWidth: togglePreviewWidth
+      };
     }
   })
 </script>
