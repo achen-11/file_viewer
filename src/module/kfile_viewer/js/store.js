@@ -248,7 +248,7 @@
       var name = file.FullName || file.Name;
       editFileName.value = name;
       editContent.value = previewContent.value;
-      if (previewWidth.value < 500) setPreviewWidth(Math.min(window.innerWidth * 0.5, 800));
+      if (previewWidth.value < 500) setPreviewWidth(Math.min(window.innerWidth * 0.5, 460));
       apiGet('read', { fileName: name }).then(function (text) {
         editContent.value = text != null ? String(text) : '';
       }).catch(function () {});
@@ -256,7 +256,7 @@
     function cancelEdit() {
       editFileName.value = '';
       editContent.value = '';
-      setPreviewWidth(890);
+      setPreviewWidth(460);
     }
     function saveEdit() {
       var name = editFileName.value;
