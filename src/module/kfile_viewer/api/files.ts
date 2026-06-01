@@ -43,7 +43,7 @@ k.api.get("exists", (fileName: string) => {
 })
 
 k.api.get("url", (fileName: string) => {
-  return k.file.url(fileName)
+  return k.site.info.makeAbsUrl(k.file.url(fileName))
 })
 
 k.api.get("getAllFiles", () => {

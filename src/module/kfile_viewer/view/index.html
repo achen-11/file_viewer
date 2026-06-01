@@ -6,13 +6,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KFile 文件管理</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+    (function syncKoobooDarkMode() {
+      var THEME_ATTRS = ['class', 'data-theme', 'data-color-mode', 'data-bs-theme'];
+      function elementImpliesDark(el) {
+        if (!el) return null;
+        if (el.classList.contains('dark') || el.classList.contains('dark-mode')) return true;
+        var theme = el.getAttribute('data-theme') || el.getAttribute('data-color-mode') || el.getAttribute('data-bs-theme');
+        if (theme === 'dark') return true;
+        if (theme === 'light') return false;
+        return null;
+      }
+      function detectKoobooDark() {
+        var explicitDark = false;
+        var explicitLight = false;
+        var seen = new Set();
+        function walk(win) {
+          if (!win || seen.has(win)) return;
+          seen.add(win);
+          try {
+            [win.document.documentElement, win.document.body].forEach(function (el) {
+              var state = elementImpliesDark(el);
+              if (state === true) explicitDark = true;
+              if (state === false) explicitLight = true;
+            });
+          } catch (_) { }
+          try {
+            if (win.parent && win.parent !== win) walk(win.parent);
+          } catch (_) { }
+        }
+        walk(window);
+        if (explicitDark) return true;
+        if (explicitLight) return false;
+        try {
+          var stored = localStorage.getItem('theme') || localStorage.getItem('color-mode') || localStorage.getItem('vueuse-color-scheme');
+          if (stored === 'dark') return true;
+          if (stored === 'light') return false;
+        } catch (_) { }
+        var embedded = false;
+        try { embedded = window.parent && window.parent !== window; } catch (_) { embedded = true; }
+        if (embedded) return false;
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+      function apply() {
+        document.documentElement.classList.toggle('dark', detectKoobooDark());
+      }
+      function observeThemeRoots() {
+        var observed = new WeakSet();
+        function observeEl(el) {
+          if (!el || observed.has(el)) return;
+          observed.add(el);
+          try {
+            new MutationObserver(apply).observe(el, { attributes: true, attributeFilter: THEME_ATTRS });
+          } catch (_) { }
+        }
+        var seen = new Set();
+        function walk(win) {
+          if (!win || seen.has(win)) return;
+          seen.add(win);
+          try {
+            observeEl(win.document.documentElement);
+            observeEl(win.document.body);
+          } catch (_) { }
+          try {
+            if (win.parent && win.parent !== win) walk(win.parent);
+          } catch (_) { }
+        }
+        walk(window);
+      }
+      apply();
+      observeThemeRoots();
+      window.addEventListener('storage', function (e) {
+        if (e.key && /theme|color|scheme/i.test(e.key)) apply();
+      });
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', apply);
+      }
+    })();
+  </script>
   <script src="/js/marked.min.js"></script>
   <script src="/js/vue-prod.js"></script>
   <script src="/js/vue-router.js"></script>
   <script src="/js/axios.min.js"></script>
   <script env="server">
-    const baseUrl = (k.module.baseUrl.startsWith('http:') ? 'https:' + k.module.baseUrl.slice(5) : k.module.baseUrl) + '/api/files'
-    k.utils.clientJS.setVariable("baseUrl", { value: baseUrl})
+    function ensureHttps(url) {
+      return url.startsWith('http:') ? 'https:' + url.slice(5) : url
+    }
+    const moduleBase = ensureHttps(k.module.baseUrl).replace(/\/$/, '')
+    const apiBaseUrl = moduleBase + '/api/files'
+    const sitePublicUrl = k.site.info.makeAbsUrl('/').replace(/\/$/, '')
+    k.utils.clientJS.setVariable("baseUrl", { value: apiBaseUrl })
+    k.utils.clientJS.setVariable("sitePublicUrl", { value: sitePublicUrl })
   </script>
   <script>
     /* 
@@ -146,11 +231,34 @@
       background: none;
       padding: 0;
     }
+
+    .dark .preview-markdown {
+      color: #cbd5e1;
+    }
+
+    .dark .preview-markdown h2 {
+      border-bottom-color: #404040;
+    }
+
+    .dark .preview-markdown th,
+    .dark .preview-markdown td {
+      border-color: #404040;
+    }
+
+    .dark .preview-markdown th {
+      background: #333333;
+    }
+
+    .dark .preview-markdown code,
+    .dark .preview-markdown pre {
+      background: #333333;
+      color: #e2e8f0;
+    }
   </style>
 </head>
 
-<body class="bg-slate-100 text-slate-900 min-h-screen">
-  <div id="app" class="dark:bg-[#252526] dark:text-neutral-200 flex flex-col h-screen">
+<body class="bg-slate-100 text-slate-900 dark:bg-[#252526] dark:text-neutral-200 min-h-screen">
+  <div id="app" class="flex flex-col h-screen">
     <router-view>
     </router-view>
   </div>

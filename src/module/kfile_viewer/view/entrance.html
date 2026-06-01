@@ -7,11 +7,11 @@
         <button
           v-if="treeCollapsed"
           @click="toggleTree"
-          class="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 bg-white border border-r-0 border-slate-200 rounded-l-md shadow-md hover:bg-slate-50 cursor-pointer transition-colors"
+          class="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 bg-white dark:bg-[#2d2d2d] border border-r-0 border-slate-200 dark:border-neutral-700 rounded-l-md shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 cursor-pointer transition-colors"
           title="展开文件夹"
           aria-label="展开文件夹"
         >
-          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-slate-500 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
           </svg>
         </button>
@@ -20,7 +20,7 @@
             <kfile-viewer-file-list class="flex-1 min-w-0"></kfile-viewer-file-list>
             <!-- 拖拽分隔条 -->
             <div
-              class="w-1 cursor-col-resize bg-transparent hover:bg-indigo-300 transition-colors flex-shrink-0"
+              class="w-1 cursor-col-resize bg-transparent hover:bg-indigo-300 dark:hover:bg-indigo-600 transition-colors flex-shrink-0"
               @mousedown="handleResizeStart"
               @dblclick="togglePreviewWidth"
               title="拖拽调整宽度，双击切换"

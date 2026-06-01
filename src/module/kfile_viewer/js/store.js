@@ -70,13 +70,21 @@
       if (sortBy.value === by) sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
       else { sortBy.value = by; sortOrder.value = 'asc'; }
     }
+    function resolvePublicFileUrl(url) {
+      if (!url) return '';
+      if (/^https?:\/\//i.test(url)) return url;
+      var origin = (typeof sitePublicUrl !== 'undefined' && sitePublicUrl && sitePublicUrl.value)
+        ? String(sitePublicUrl.value).replace(/\/$/, '')
+        : window.location.origin;
+      return url.charAt(0) === '/' ? origin + url : origin + '/' + url;
+    }
     function getFileIconClass(file) {
-      if (!file || !file.Name) return 'text-slate-400';
+      if (!file || !file.Name) return 'text-slate-400 dark:text-neutral-500';
       var ext = (file.Name || '').split('.').pop().toLowerCase();
-      if (['md', 'markdown'].indexOf(ext) !== -1) return 'text-amber-600';
-      if (['json', 'js', 'ts', 'html', 'css', 'xml'].indexOf(ext) !== -1) return 'text-indigo-500';
-      if (['txt', 'log', 'csv'].indexOf(ext) !== -1) return 'text-slate-500';
-      return 'text-slate-400';
+      if (['md', 'markdown'].indexOf(ext) !== -1) return 'text-amber-600 dark:text-amber-400';
+      if (['json', 'js', 'ts', 'html', 'css', 'xml'].indexOf(ext) !== -1) return 'text-indigo-500 dark:text-indigo-400';
+      if (['txt', 'log', 'csv'].indexOf(ext) !== -1) return 'text-slate-500 dark:text-neutral-400';
+      return 'text-slate-400 dark:text-neutral-500';
     }
 
     function setError(msg) {
@@ -97,10 +105,10 @@
       var el = document.createElement('div');
       var icon = '';
       var bg = '';
-      if (type === 'success') { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'; bg = 'bg-emerald-50 border-emerald-200 text-emerald-700'; }
-      else if (type === 'error') { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>'; bg = 'bg-red-50 border-red-200 text-red-700'; }
-      else if (type === 'warning') { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>'; bg = 'bg-amber-50 border-amber-200 text-amber-700'; }
-      else { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'; bg = 'bg-slate-50 border-slate-200 text-slate-700'; }
+      if (type === 'success') { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'; bg = 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/60 dark:border-emerald-800 dark:text-emerald-300'; }
+      else if (type === 'error') { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>'; bg = 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950/60 dark:border-red-800 dark:text-red-300'; }
+      else if (type === 'warning') { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>'; bg = 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/60 dark:border-amber-800 dark:text-amber-300'; }
+      else { icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'; bg = 'bg-slate-50 border-slate-200 text-slate-700 dark:bg-neutral-800 dark:border-neutral-600 dark:text-neutral-200'; }
       el.className = 'flex items-center gap-2 px-4 py-3 rounded-lg border shadow-lg transform transition-all duration-300 translate-x-full opacity-0 ' + bg;
       el.innerHTML = '<span class="flex-shrink-0">' + icon + '</span><span class="text-sm font-medium">' + message + '</span>';
       toast.appendChild(el);
@@ -214,7 +222,7 @@
       previewError.value = '';
       fileUrl.value = '';
       apiGet('url', { fileName: name }).then(function (url) {
-        if (url) fileUrl.value = url.startsWith('http') ? url : (window.location.origin + url);
+        if (url) fileUrl.value = resolvePublicFileUrl(url);
       });
       var ext = (file.Name || '').split('.').pop().toLowerCase();
       var textExts = ['txt', 'md', 'json', 'html', 'css', 'js', 'ts', 'xml', 'csv', 'log'];
